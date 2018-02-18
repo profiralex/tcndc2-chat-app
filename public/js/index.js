@@ -12,5 +12,5 @@ socket.on('newMessage', function(data) {
 });
 
 function createMessage(from, text) {
-  socket.emit('createMessage', { from: from, text: text });
+  return socket.emit('createMessage', { from: from, text: text });
 }
