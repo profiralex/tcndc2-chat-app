@@ -32,8 +32,9 @@ io.on('connection', socket => {
     );
   });
 
-  socket.on('createMessage', message => {
+  socket.on('createMessage', (message, cb) => {
     io.emit('newMessage', generateMessage(message.from, message.text));
+    cb({ status: 'success' });
   });
 });
 
