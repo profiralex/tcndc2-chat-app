@@ -34,16 +34,17 @@ io.on('connection', socket => {
 
   socket.on('createMessage', (message, cb) => {
     io.emit('newMessage', generateMessage(message.from, message.text));
-    cb({ status: 'success' });
+    cb();
   });
 
-  socket.on('createLocationMessage', coords => {
+  socket.on('createLocationMessage', (coords, cb) => {
     const locationMessage = generateLocationMessage(
       'Admin',
       coords.latitude,
       coords.longitude,
     );
     io.emit('newLocationMessage', locationMessage);
+    cb();
   });
 });
 
