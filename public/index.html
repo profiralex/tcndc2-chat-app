@@ -6,8 +6,8 @@
 <head>
   <meta charset="utf-8">
   <title>Chat app</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment-with-locales.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 
@@ -18,16 +18,19 @@
     <div id="users"></div>
   </div>
 
-  <div class="chat__main">
-    <ol id="messages" class="chat__messages"></ol>
+  <div id="app" class="chat__main">
+    <ol id="messages" class="chat__messages">
+      <message-item v-for="item in messages" v-bind:message="item" v-bind:key="item.createdAt">
+      </message-item>
+    </ol>
 
     <div class="chat__footer">
-      <form id="message-form">
-        <input type="text" autofocus autocomplete="off" name="message" placeholder="Message" />
-        <button>Send</button>
+      <form id="message-form" v-on:submit.prevent="sendMessage">
+        <input type="text" v-model="newMessageText" autofocus autocomplete="off" name="message" placeholder="Message" />
+        <button type="submit" :disabled="!messageButton.enabled">{{messageButton.text}}</button>
       </form>
 
-      <button id="send-location">Send location</button>
+      <button id="send-location" :disabled="!locationButton.enabled" v-on:click="sendLocation">{{locationButton.text}}</button>
     </div>
   </div>
 
