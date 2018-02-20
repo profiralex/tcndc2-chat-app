@@ -49,16 +49,30 @@ var app = new Vue({
 
     ref.socket.on('newMessage', function(data) {
       data.formattedTime = moment(data.createdAt).format('h:mm a');
-      ref.messages.push(data);
+      ref.addMessage(data);
     });
 
     ref.socket.on('newLocationMessage', function(data) {
       data.formattedTime = moment(data.createdAt).format('h:mm a');
-      ref.messages.push(data);
+      ref.addMessage(data);
     });
   },
 
   methods: {
+    addMessage: function(message) {
+      this.messages.push(message);
+
+      var clientHeight = this.$refs.messages.clientHeight;
+      var scrollTop = this.$refs.messages.scrollTop;
+      var scrollHeight = this.$refs.messages.scrollHeight;
+      var currentHeight = scrollTop + clientHeight;
+
+      if (clientHeight === scrollHeight || currentHeight === scrollHeight) {
+        this.$nextTick(function() {
+          this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+        });
+      }
+    },
     sendMessage: function() {
       var ref = this;
       if (!this.newMessageText) {

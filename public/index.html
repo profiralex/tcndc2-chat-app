@@ -19,7 +19,7 @@
   </div>
 
   <div id="app" class="chat__main">
-    <ol id="messages" class="chat__messages">
+    <ol id="messages" ref="messages" class="chat__messages">
       <message-item v-for="item in messages" v-bind:message="item" v-bind:key="item.createdAt">
       </message-item>
     </ol>
