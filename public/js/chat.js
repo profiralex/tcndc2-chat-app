@@ -1,3 +1,8 @@
+var router = new VueRouter({
+  mode: 'history',
+  routes: [],
+});
+
 Vue.component('message-item', {
   props: ['message'],
   template:
@@ -17,6 +22,7 @@ Vue.component('message-item', {
 });
 
 var app = new Vue({
+  router,
   el: '#app',
   data: {
     messages: [],
@@ -39,12 +45,18 @@ var app = new Vue({
     var ref = this;
     ref.socket.on('connect', function() {
       console.log('connected to server');
-      ref.connected = true;
+      ref.socket.emit('join', app.$route.query, function(error) {
+        if (error) {
+          alert(error);
+          window.location.href = '/';
+        } else {
+          console.log('No errors');
+        }
+      });
     });
 
     ref.socket.on('disconnect', function() {
       console.log('disconnected from server');
-      ref.connected = true;
     });
 
     ref.socket.on('newMessage', function(data) {

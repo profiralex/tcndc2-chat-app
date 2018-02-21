@@ -4,6 +4,7 @@ const path = require('path');
 const socketIO = require('socket.io');
 
 const { generateMessage, generateLocationMessage } = require('./utils/message');
+const { isRealString } = require('./utils/validation');
 
 const port = process.env.PORT || 3000;
 
@@ -15,35 +16,53 @@ const publicPath = path.join(__dirname, '/../public');
 app.use(express.static(publicPath));
 
 io.on('connection', socket => {
-  socket.emit(
-    'newMessage',
-    generateMessage('Admin', 'Welcome to the chat app'),
-  );
+  socket.on('join', (params, callback) => {
+    if (!isRealString(params.name) || !isRealString(params.room)) {
+      return callback('Name and room name are required');
+    }
 
-  socket.broadcast.emit(
-    'newMessage',
-    generateMessage('Admin', 'New user joined conversation'),
-  );
+    socket.join(params.room);
+    socket.name = params.name;
+    socket.room = params.room;
+
+    socket.emit(
+      'newMessage',
+      generateMessage('Admin', 'Welcome to the chat app'),
+    );
+
+    socket
+      .to(socket.room)
+      .broadcast.emit(
+        'newMessage',
+        generateMessage('Admin', `${socket.name} joined conversation`),
+      );
+
+    callback();
+  });
 
   socket.on('disconnect', () => {
-    socket.broadcast.emit(
-      'newMessage',
-      generateMessage('Admin', 'User left conversation'),
-    );
+    socket
+      .to(socket.room)
+      .broadcast.emit(
+        'newMessage',
+        generateMessage('Admin', 'User left conversation'),
+      );
   });
 
   socket.on('createMessage', (message, cb) => {
-    io.emit('newMessage', generateMessage(message.from, message.text));
+    io
+      .to(socket.room)
+      .emit('newMessage', generateMessage(socket.name, message.text));
     cb();
   });
 
   socket.on('createLocationMessage', (coords, cb) => {
     const locationMessage = generateLocationMessage(
-      'Admin',
+      socket.name,
       coords.latitude,
       coords.longitude,
     );
-    io.emit('newLocationMessage', locationMessage);
+    io.to(socket.room).emit('newLocationMessage', locationMessage);
     cb();
   });
 });
