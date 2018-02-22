@@ -3,24 +3,6 @@ var router = new VueRouter({
   routes: [],
 });
 
-Vue.component('message-item', {
-  props: ['message'],
-  template:
-    '\
-    <li class="message">\
-    <div class="message__title">\
-      <h4>{{ message.from }}</h4>\
-      <span>{{ message.formattedTime }}</span>\
-    </div>\
-    <div class="message__body">\
-      <p v-if="message.url">\
-        <a v-if="message.url" target="_blank" :href="message.url">My current location</a>\
-      </p>\
-      <p v-if="!message.url"> {{ message.text }} </p>\
-    </div>\
-    </li>',
-});
-
 var app = new Vue({
   router,
   el: '#app',

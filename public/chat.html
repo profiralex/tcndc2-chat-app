@@ -17,6 +17,7 @@
 
 <body>
   <div id="app" class="chat">
+
     <div class="chat__sidebar">
       <h3>People</h3>
       <div id="users">
@@ -30,8 +31,18 @@
 
     <div class="chat__main">
       <ol id="messages" ref="messages" class="chat__messages">
-        <message-item v-for="item in messages" v-bind:message="item" v-bind:key="item.createdAt">
-        </message-item>
+        <li class="message" v-for="message in messages">
+          <div class="message__title">
+            <h4>{{ message.from }}</h4>
+            <span>{{ message.formattedTime }}</span>
+          </div>
+          <div class="message__body">
+            <p v-if="message.url">
+              <a v-if="message.url" target="_blank" :href="message.url">My current location</a>
+            </p>
+            <p v-if="!message.url"> {{ message.text }} </p>
+          </div>
+        </li>
       </ol>
 
 
