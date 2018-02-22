@@ -18,53 +18,55 @@ const publicPath = path.join(__dirname, '/../public');
 app.use(express.static(publicPath));
 
 io.on('connection', socket => {
-  socket.on('join', (params, callback) => {
+  const sendMessageToAll = (topic, message) => {
+    io.to(socket.user.room).emit(topic, message);
+  };
+
+  const sendMessageToOthers = (topic, message) => {
+    socket.to(socket.user.room).broadcast.emit(topic, message);
+  };
+
+  const sendMessageToSocket = (topic, message) => {
+    socket.emit(topic, message);
+  };
+
+  socket.on('join', (params, cb) => {
     if (!isRealString(params.name) || !isRealString(params.room)) {
-      return callback('Name and room name are required');
+      return cb('Name and room name are required');
     }
 
+    const user = users.addUser(socket.id, params.name, params.room);
     socket.join(params.room);
+    socket.user = user;
 
-    users.removeUser(socket.id);
-    users.addUser(socket.id, params.name, params.room);
+    sendMessageToAll('updateUserList', users.getUserList(params.room));
 
-    io.to(params.room).emit('updateUserList', users.getUserList(params.room));
-
-    socket.emit(
+    sendMessageToSocket(
       'newMessage',
       generateMessage('Admin', 'Welcome to the chat app'),
     );
 
-    socket
-      .to(params.room)
-      .broadcast.emit(
-        'newMessage',
-        generateMessage('Admin', `${params.name} joined conversation`),
-      );
-
-    callback();
+    sendMessageToOthers(
+      'newMessage',
+      generateMessage('Admin', `${params.name} joined conversation`),
+    );
+    cb();
   });
 
   socket.on('disconnect', () => {
     const user = users.removeUser(socket.id);
 
-    io.to(user.room).emit('updateUserList', users.getUserList(user.room));
-
-    socket
-      .to(user.room)
-      .broadcast.emit(
-        'newMessage',
-        generateMessage('Admin', 'User left conversation'),
-      );
+    sendMessageToOthers('updateUserList', users.getUserList(user.room));
+    sendMessageToOthers(
+      'newMessage',
+      generateMessage('Admin', `${user.name} left conversation`),
+    );
   });
 
   socket.on('createMessage', (message, cb) => {
     const user = users.getUser(socket.id);
 
-    io
-      .to(user.room)
-      .emit('newMessage', generateMessage(user.name, message.text));
-
+    sendMessageToAll('newMessage', generateMessage(user.name, message.text));
     cb();
   });
 
@@ -76,7 +78,7 @@ io.on('connection', socket => {
       coords.longitude,
     );
 
-    io.to(user.room).emit('newLocationMessage', locationMessage);
+    sendMessageToAll('newLocationMessage', locationMessage);
     cb();
   });
 });
