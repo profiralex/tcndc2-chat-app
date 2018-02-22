@@ -26,6 +26,7 @@ var app = new Vue({
   el: '#app',
   data: {
     messages: [],
+    users: [],
     playSound: false,
     connected: false,
     messageButton: {
@@ -49,14 +50,16 @@ var app = new Vue({
         if (error) {
           alert(error);
           window.location.href = '/';
-        } else {
-          console.log('No errors');
         }
       });
     });
 
     ref.socket.on('disconnect', function() {
       console.log('disconnected from server');
+    });
+
+    ref.socket.on('updateUserList', function(data) {
+      ref.users = data;
     });
 
     ref.socket.on('newMessage', function(data) {
